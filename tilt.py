@@ -47,30 +47,44 @@ def layout(name):
         Output('tilt_plot_gravity','figure'),
         Output('tilt_plot_temperature','figure'),
         Input('tilt_interval','n_intervals'),
+        Input('datepicker','start_date'),
+        Input('datepicker','end_date'),
         Input('cache','children'))
-def update_graph_per_bit(n,cache):
+def update_tilt(n,start,end,cache):
+    # Block bullshit requests
     if len(cache)==0 or not cache in app.historian.data:
         raise PreventUpdate
 
-    data=app.historian.data[cache]
+    # Collect requested data
     t=[]
     sg=[]
     tt=[]
+    data=app.historian.data[cache]
+    _start=0
+    _end=0
+    if start:   _start=time.mktime(time.strptime(start,'%Y-%m-%d'))
+    if end:     _end=time.mktime(time.strptime(end,'%Y-%m-%d'))
     for i in range(0,len(data)):
-        t.append(datetime.fromtimestamp(data[i].time))
-        sg.append(data[i].gravity)
-        tt.append(data[i].temperature)
+        if data[i].time>_start and (_end==0 or data[i].time<_end):
+            t.append(datetime.fromtimestamp(data[i].time))
+            sg.append(data[i].gravity)
+            tt.append(data[i].temperature)
+
+    # Update plots
     if app.historian.fahrenheit:
         tunit='Fahrenheit'
     else:
         tunit='Celsius'
-
-    # Update plots
     gfig=go.Figure(data=[go.Scatter(x=t,y=sg,mode='lines+markers',marker=dict(color='Red'))])
     gfig.update_layout(title='Specific Gravity',yaxis_title='Oechsle',xaxis_title='Time',template="plotly_dark",title_x=0.5,uirevision=True)
     tfig=go.Figure(data=[go.Scatter(x=t,y=tt,mode='lines+markers',marker=dict(color='Red'))])
     tfig.update_layout(title='Temperature',yaxis_title=tunit,xaxis_title='Time',template="plotly_dark",title_x=0.5,uirevision=True)
-
-    return sg[-1],tt[-1],gfig,tfig
+    _sg=0
+    _tt=0
+    if len(t):
+        _sg=sg[-1]
+        _tt=tt[-1]
+    
+    return _sg,_tt,gfig,tfig
 
 

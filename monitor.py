@@ -6,7 +6,6 @@
 # Import system modules
 from dash import dcc
 from dash import html
-#from flask import Flask, Response, redirect, url_for, request, session, abort
 from flask import request
 from dash.dependencies import Input, Output, State
 from urllib.parse import unquote
@@ -107,9 +106,8 @@ navbar = dbc.Navbar(
             html.A(
                 dbc.Row(
                     [
-                        dbc.Col(html.Img(src="/assets/wins.png", height="30px")),
-                        dbc.Col(dbc.NavbarBrand('BrewTrend',className="ml-2")),
-                        dbc.Col([dbc.Col(html.H1(id='testcol'))]),
+                        dbc.Col(html.Img(src="/assets/beer.png", height="40px")),
+                        dbc.Col(dbc.NavbarBrand('BrewTrend')),
                     ],
                     align="center",
                 ),
@@ -117,12 +115,13 @@ navbar = dbc.Navbar(
             ),
             dbc.NavbarToggler(id="navbar-toggler2"),
             dbc.Collapse(
-                dbc.Nav(
-                    # right align dropdown menu with ml-auto className
-                    [dropdown], className="ml-auto", navbar=True
-                ),
+                dbc.Nav([dropdown],navbar=True),
                 id="navbar-collapse2",
                 navbar=True,
+            ),
+            dcc.DatePickerRange(
+                id="datepicker",
+                clearable=True,
             ),
         ]
     ),
