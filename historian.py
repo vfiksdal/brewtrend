@@ -40,7 +40,8 @@ class Historian():
             self.path=self.path+'/'
 
         # Load dataset from existing files
-        self.Reload()
+        if len(self.path):
+            self.Reload()
 
     def Reload(self):
         # Find existing files in path

@@ -8,8 +8,7 @@ from dash import html
 import dash_bootstrap_components as dbc
 import dash_daq as daq
 import plotly.graph_objects as go
-import requests,json,time
-import numpy as np
+import time
 from dash.dependencies import Input, Output
 from datetime import datetime
 from webapp import app

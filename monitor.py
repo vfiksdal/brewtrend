@@ -24,7 +24,7 @@ cert=None
 average=0
 port=80
 host='0.0.0.0'
-path=''
+path='.'
 size=24*4*31
 maxinterval=60
 fahrenheit=False
@@ -62,7 +62,7 @@ if __name__ == '__main__':
             print('Switches:')
             print('\t--host HOST\tInterface to bind to (Default: 0.0.0.0)')
             print('\t--port PORT\tNetwork port for web gui (Default: 80)')
-            print('\t--path PATH\tPath to log data to (Default: disabled)')
+            print('\t--path PATH\tPath to log data to (Default: cwd)')
             print('\t--average N\tAverage over N samples')
             print('\t--maxinterval S\tFastest allowed interval in seconds')
             print('\t--fahrenheit\tUse fahrenheit instead of celsius')
@@ -121,6 +121,7 @@ navbar = dbc.Navbar(
             ),
             dcc.DatePickerRange(
                 id="datepicker",
+                with_portal=True,
                 clearable=True,
             ),
         ]
