@@ -16,9 +16,9 @@ from dash.exceptions import PreventUpdate
 
 def layout(name):
     # Collect timing information
-    t_interval=app.historian.interval
+    t_interval=app.historian.cfg.interval
     if t_interval<10: t_interval=10
-    if app.historian.fahrenheit:
+    if app.historian.cfg.fahrenheit:
         tunit='Fahrenheit'
     else:
         tunit='Celsius'
@@ -79,15 +79,15 @@ def update_ispindel(n,start,end,cache):
             b.append(data[i].battery)
 
     # Update plots
-    if app.historian.fahrenheit:
+    if app.historian.cfg.fahrenheit:
         tunit='Fahrenheit'
     else:
         tunit='Celsius'
-    gfig=go.Figure(data=[go.Scatter(x=t,y=sg,mode='lines+markers',marker=dict(color='Red'))])
+    gfig=go.Figure(data=[go.Scatter(x=t,y=sg,mode='lines+markers',marker=dict(size=2,color='Red'))])
     gfig.update_layout(title='Specific Gravity',yaxis_title='Oechsle',xaxis_title='Time',template="plotly_dark",title_x=0.5,uirevision=True)
-    tfig=go.Figure(data=[go.Scatter(x=t,y=tt,mode='lines+markers',marker=dict(color='Red'))])
+    tfig=go.Figure(data=[go.Scatter(x=t,y=tt,mode='lines+markers',marker=dict(size=2,color='Red'))])
     tfig.update_layout(title='Temperature',yaxis_title=tunit,xaxis_title='Time',template="plotly_dark",title_x=0.5,uirevision=True)
-    bfig=go.Figure(data=[go.Scatter(x=t,y=b,mode='lines+markers',marker=dict(color='Red'))])
+    bfig=go.Figure(data=[go.Scatter(x=t,y=b,mode='lines+markers',marker=dict(size=2,color='Red'))])
     bfig.update_layout(title='Battery',yaxis_title='Volt',xaxis_title='Time',template="plotly_dark",title_x=0.5,uirevision=True)
     _sg=0
     _tt=0

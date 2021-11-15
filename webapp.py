@@ -8,5 +8,4 @@ import dash,requests
 app=dash.Dash(__name__,title='BrewTrend',external_stylesheets=[dbc.themes.DARKLY])
 app.config.suppress_callback_exceptions=True
 app.historian=None
-app.debug=False
 

@@ -17,22 +17,28 @@ import sys,requests
 from webapp import app
 
 # Import historian
+from configuration import Configuration
 from historian import Historian
 
 # Parse input parameters
+cfg=Configuration()
 cert=None
-mfilter=0
-average=0
 port=80
 host='0.0.0.0'
-path='.'
-size=24*4*31
-maxinterval=60
-fahrenheit=False
 if __name__ == '__main__':
     i=1
     while i<len(sys.argv):
-        if sys.argv[i]=='--host':
+        if sys.argv[i]=='--config':
+            i+=1
+            if not cfg.Read(sys.argv[i]):
+                print('Failed to read configuration from '+sys.argv[i])
+                exit()
+        i+=1
+    i=1
+    while i<len(sys.argv):
+        if sys.argv[i]=='--config':
+            i+=1
+        elif sys.argv[i]=='--host':
             i+=1
             host=sys.argv[i]
         elif sys.argv[i]=='--port':
@@ -40,38 +46,45 @@ if __name__ == '__main__':
             port=int(sys.argv[i])
         elif sys.argv[i]=='--mfilter':
             i+=1
-            mfilter=int(sys.argv[i])
+            cfg.mfilter=int(sys.argv[i])
         elif sys.argv[i]=='--average':
             i+=1
-            average=int(sys.argv[i])
+            cfg.average=int(sys.argv[i])
         elif sys.argv[i]=='--path':
             i+=1
-            path=sys.argv[i]
+            cfg.path=sys.argv[i]
+        elif sys.argv[i]=='--size':
+            i+=1
+            cfg.size=int(sys.argv[i])
         elif sys.argv[i]=='--maxinterval':
             i+=1
-            maxinterval=int(sys.argv[i])
+            cfg.maxinterval=int(sys.argv[i])
         elif sys.argv[i]=='--fahrenheit':
-            fahrenheit=True
+            cfg.fahrenheit=True
         elif sys.argv[i]=='--selfsigned':
             cert='adhoc'
         elif sys.argv[i]=='--debug':
-            app.debug=True
+            cfg.debug=True
         elif sys.argv[i]=='--help':
-            print('BrewTrend 0.1')
+            print('BrewTrend 0.2')
             print('Logs and Displays data from tilt/ispindel')
             print('Fiksdal(C)2021')
             print('')
             print('Usage: '+sys.argv[0]+'')
             print('')
-            print('Switches:')
+            print('Options:')
+            print('\t--config PATH\tLoad options and calibration from file')
             print('\t--host HOST\tInterface to bind to (Default: 0.0.0.0)')
             print('\t--port PORT\tNetwork port for web gui (Default: 80)')
+            print('\t--selfsigned\tUse self-signed certificate for https')
+            print('')
+            print('Configuration overrides:')
             print('\t--path PATH\tPath to log data to (Default: cwd)')
+            print('\t--size N\tNumber of samples to keep in buffer')
             print('\t--mfilter N\tMedian filter over N samples')
             print('\t--average N\tAverage over N samples')
             print('\t--maxinterval S\tFastest allowed interval in seconds')
             print('\t--fahrenheit\tUse fahrenheit instead of celsius')
-            print('\t--selfsigned\tUse self-signed certificate for https')
             print('\t--debug\t\tEnable debugging')
             print('')
             exit()
@@ -82,7 +95,7 @@ if __name__ == '__main__':
 
 
 # Start historian with parsed settings
-app.historian=Historian(path,mfilter,average,size,maxinterval,fahrenheit,app.debug)
+app.historian=Historian(cfg)
 
 # Find existing devices in historian
 devices=[]
@@ -209,7 +222,7 @@ def update_devices(n):
         raise PreventUpdate
 
     # Update device list
-    if app.debug: print('Updating devicelist')
+    if cfg.debug: print('Updating devicelist')
     devices=[]
     for key in app.historian.data:
         devices.append(dbc.DropdownMenuItem(key,href='/'+key))
@@ -275,17 +288,17 @@ def update_historian():
         except Exception as e:
             print('Registration error: '+str(e))
     else:
-        if app.debug: print('GET request received')
+        if cfg.debug: print('GET request received')
     
     return 'Use POST requests to update measurements'
 
 # Start server
 if __name__ == '__main__':
     if cert==None:
-        app.run_server(host=host,port=port,debug=app.debug,use_reloader=False)
+        app.run_server(host=host,port=port,debug=cfg.debug,use_reloader=False)
     else:
-        app.run_server(host=host,port=port,debug=app.debug,use_reloader=False,ssl_context=cert)
-    if app.debug: print('Running')
+        app.run_server(host=host,port=port,debug=cfg.debug,use_reloader=False,ssl_context=cert)
+    if cfg.debug: print('Running')
 
 
 
