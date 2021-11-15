@@ -21,6 +21,7 @@ from historian import Historian
 
 # Parse input parameters
 cert=None
+mfilter=0
 average=0
 port=80
 host='0.0.0.0'
@@ -37,6 +38,9 @@ if __name__ == '__main__':
         elif sys.argv[i]=='--port':
             i+=1
             port=int(sys.argv[i])
+        elif sys.argv[i]=='--mfilter':
+            i+=1
+            mfilter=int(sys.argv[i])
         elif sys.argv[i]=='--average':
             i+=1
             average=int(sys.argv[i])
@@ -63,6 +67,7 @@ if __name__ == '__main__':
             print('\t--host HOST\tInterface to bind to (Default: 0.0.0.0)')
             print('\t--port PORT\tNetwork port for web gui (Default: 80)')
             print('\t--path PATH\tPath to log data to (Default: cwd)')
+            print('\t--mfilter N\tMedian filter over N samples')
             print('\t--average N\tAverage over N samples')
             print('\t--maxinterval S\tFastest allowed interval in seconds')
             print('\t--fahrenheit\tUse fahrenheit instead of celsius')
@@ -77,7 +82,7 @@ if __name__ == '__main__':
 
 
 # Start historian with parsed settings
-app.historian=Historian(path,average,size,maxinterval,fahrenheit,app.debug)
+app.historian=Historian(path,mfilter,average,size,maxinterval,fahrenheit,app.debug)
 
 # Find existing devices in historian
 devices=[]

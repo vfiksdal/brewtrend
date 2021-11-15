@@ -2,10 +2,8 @@
 #
 # JSON server for collecting and sharing data over http-port
 #
-from http.server import BaseHTTPRequestHandler, HTTPServer
-from functools import partial
 from datetime import datetime
-import time,json,socket,sys,os,csv
+import time,json,os,csv,copy
 
 
 # Dataset holder
@@ -18,16 +16,17 @@ class dataset():
 
 # Custom httpd handler
 class Historian():
-            
-    def __init__(self,path,average,size,maxinterval,fahrenheit,debug):
+    def __init__(self,path,mfilter,average,size,maxinterval,fahrenheit,debug):
         self.interval=900
         self.maxinterval=maxinterval
         self.fahrenheit=fahrenheit
+        self.mfilter=mfilter
         self.average=average
         self.path=path
         self.size=size
         self.debug=debug
         self.data={}
+        self.mdata={}
         self.start=0
         self.fd=0
 
@@ -77,12 +76,7 @@ class Historian():
             obj.gravity=float(data[2])
             obj.temperature=float(data[3])
             obj.battery=float(data[4])
-            name=data[1]
-            if not name in self.data:
-                self.data[name]=[]
-            while len(self.data[name])>self.size:
-                self.data[name]=self.data[name][1:]
-            self.data[name].append(obj)
+            self.AddSample(data[1],obj)
 
         # Report result
         if self.debug:
@@ -92,6 +86,51 @@ class Historian():
                 print(name+': '+str(len(self.data[name]))+' datasets')
 
 
+    def AddSample(self,name,data):
+        # Add dataset
+        if not name in self.data:
+            self.data[name]=[]
+        while len(self.data[name])>self.size:
+            self.data[name]=self.data[name][1:]
+        self.data[name].append(data)
+
+        # Median filter output
+        if self.mfilter>1:
+            if not name in self.mdata:
+                self.mdata[name]=[]
+            self.mdata[name].append(copy.copy(data))
+            if len(self.mdata[name])>=self.mfilter:
+                gravity=[]
+                temperature=[]
+                battery=[]
+                for x in self.mdata[name]:
+                    gravity.append(x.gravity)
+                    temperature.append(x.temperature)
+                    battery.append(x.battery)
+                gravity=sorted(gravity)
+                temperature=sorted(temperature)
+                battery=sorted(battery)
+                data.gravity=gravity[int(self.mfilter/2)]
+                data.temperature=temperature[int(self.mfilter/2)]
+                data.battery=battery[int(self.mfilter/2)]
+                self.mdata[name]=self.mdata[name][1:]
+
+        # Lowpass filter output
+        if self.average>1:
+            if len(self.data[name])>=self.average:
+                n=self.average
+            else:
+                n=len(self.data[name])
+            sum_gravity=0
+            sum_temperature=0
+            sum_battery=0
+            for i in range(len(self.data[name])-n,len(self.data[name])):
+                sum_gravity+=self.data[name][i].gravity
+                sum_temperature+=self.data[name][i].temperature
+                sum_battery+=self.data[name][i].battery
+            data.gravity=sum_gravity/n
+            data.temperature=sum_temperature/n
+            data.battery=sum_battery/n
 
     def ParseSpindel(self,jsondata):
         if self.debug:  print('Parsing iSpindel data: '+str(jsondata))
@@ -142,31 +181,6 @@ class Historian():
             print('Failed to parse input data: '+str(string))
 
         if len(name) and data:
-            # Add dataset
-            if not name in self.data:
-                self.data[name]=[]
-            while len(self.data[name])>self.size:
-                self.data[name]=self.data[name][1:]
-            self.data[name].append(data)
-
-            # Lowpass filter output
-            if self.average>1:
-                if len(self.data[name])>=self.average:
-                    n=self.average
-                else:
-                    n=len(self.data[name])
-                if self.debug: print('Averaging '+str(n)+' samples')
-                sum_gravity=0
-                sum_temperature=0
-                sum_battery=0
-                for i in range(len(self.data[name])-n,len(self.data[name])):
-                    sum_gravity+=self.data[name][i].gravity
-                    sum_temperature+=self.data[name][i].temperature
-                    sum_battery+=self.data[name][i].battery
-                self.data[name][-1].gravity=sum_gravity/n
-                self.data[name][-1].temperature=sum_temperature/n
-                self.data[name][-1].battery=sum_battery/n
-
             # Drop old files regularly
             if self.start+3600*24*7<time.time():
                 if self.fd:
@@ -194,6 +208,9 @@ class Historian():
                 csvdata+=str(data.battery)+'\n'
                 self.fd.write(csvdata)
                 self.fd.flush()
+
+            # Add sample to buffers
+            self.AddSample(name,data)
 
         return '{}'
 
