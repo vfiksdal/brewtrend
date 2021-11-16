@@ -97,6 +97,7 @@ if __name__ == '__main__':
 # Start historian with parsed settings
 app.historian=Historian(cfg)
 
+
 # Find existing devices in historian
 devices=[]
 for key in app.historian.data:
@@ -113,40 +114,39 @@ dropdown = dbc.DropdownMenu(
     label = "Module",
 )
 
+
 # Import modules
 import ispindel
 import tilt
 
-# Add navbar
+
+# Define navbar
 navbar = dbc.Navbar(
-    dbc.Container(
-        [
-            html.A(
-                dbc.Row(
-                    [
-                        dbc.Col(html.Img(src="/assets/beer.png", height="40px")),
-                        dbc.Col(dbc.NavbarBrand('BrewTrend')),
-                    ],
-                    align="center",
-                ),
-                href="/",
+    dbc.Container([
+        html.A(
+            dbc.Row(
+                [
+                    dbc.Col(html.Img(src="/assets/beer.png", height="40px")),
+                    dbc.Col(dbc.NavbarBrand('BrewTrend')),
+                ],
+                align="center",
             ),
-            dbc.NavbarToggler(id="navbar-toggler2"),
-            dbc.Collapse(
-                dbc.Nav([dropdown],navbar=True),
-                id="navbar-collapse2",
-                navbar=True,
-            ),
-            dcc.DatePickerRange(
-                id="datepicker",
-                with_portal=True,
-                clearable=True,
-            ),
-        ]
-    ),
+            href="/",
+        ),
+        dbc.NavbarToggler(id="navbar-toggler2"),
+        dbc.Collapse(
+            dbc.Nav([dropdown],navbar=True),
+            id="navbar-collapse2",
+            navbar=True,
+        ),
+        dcc.DatePickerRange(
+            id="datepicker",
+            className="dash-bootstrap",
+            clearable=True,
+        ),
+    ]),
     color="dark",
     dark=True,
-    className="mb-4",
 )
 
 def toggle_navbar_collapse(n, is_open):
@@ -162,17 +162,28 @@ for i in [2]:
     )(toggle_navbar_collapse)
 
 
+# Define footer
+footer=html.Footer(
+    html.A(
+        'Vegard Fiksdal (C) 2021',
+        href='https://github.com/vfiksdal/brewtrend',
+        style={'color':'black'}),
+    className="bg-dark text-center"
+)
 
-# embedding the navigation bar
+
+# Clobber it all together
 app.layout = html.Div([
     dcc.Location(id='url', refresh=False),
     dcc.Interval(id='dl_interval',interval=10000,n_intervals=0),
     html.Div(id='cache',style={'display':'none'},children=device),
     navbar,
-    html.Div(id='page-content')
+    html.Div(id='page-content'),
+    footer
 ])
 
 
+# Callback to update display
 @app.callback(
         Output('page-content','children'),
         Output('cache','children'),
@@ -204,6 +215,7 @@ def display_page(pathname,cache):
     print('loading:'+str(pathname))
 
 
+# Callback to update device list
 @app.callback(
         Output('dropdown','children'),
         Input('dl_interval','n_intervals'))
@@ -229,10 +241,8 @@ def update_devices(n):
     return devices
 
 
-# For uwsgi/nginx integration
-server=app.server
-
 # Route updates to historian
+server=app.server
 @server.route("/update/",methods=['GET','POST'])
 @server.route("/update",methods=['GET','POST'])
 def update_historian():
@@ -292,13 +302,11 @@ def update_historian():
     
     return 'Use POST requests to update measurements'
 
-# Start server
+
+# Start ad-hoc server
 if __name__ == '__main__':
     if cert==None:
         app.run_server(host=host,port=port,debug=cfg.debug,use_reloader=False)
     else:
         app.run_server(host=host,port=port,debug=cfg.debug,use_reloader=False,ssl_context=cert)
-    if cfg.debug: print('Running')
-
-
 

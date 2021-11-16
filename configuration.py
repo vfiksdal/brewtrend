@@ -14,7 +14,7 @@ class Configuration():
         self.interval=900
         self.maxinterval=30
         self.fahrenheit=False
-        self.mfilter=3
+        self.mfilter=0
         self.average=0
         self.path='.'
         self.size=24*4*31
