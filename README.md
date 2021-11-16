@@ -4,10 +4,12 @@ Logs and plots data from tilt and ispindel devices in a interactive gui hosted o
 # Installation
 First install a python3 distribution of your choice, winpython works well for windows users, linux/mac users can use what ships with their OS.
 Then you need to install some dependencies:
-python -m pip install dash dash_bootstrap_components dash_daq
+
+>python -m pip install dash dash_bootstrap_components dash_daq
+
 Finally you can run the server application:
 
-python brewtrend.py --port 80 --config brewtrend.ini
+>python brewtrend.py --port 80 --config brewtrend.ini
 
 Please note that by default it will bind to port 80. You will either have to allow your user to do this, or use a higher port.
 
