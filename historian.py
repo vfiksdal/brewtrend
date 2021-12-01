@@ -138,7 +138,7 @@ class Historian():
         data=dataset()
         data.temperature=float(jsondata['temperature'])
         data.battery=float(jsondata['battery'])
-        data.gravity=float(jsondata['gravity'])
+        data.gravity=259/(259-float(jsondata['gravity']))
         #data.id=jsondata['ID']
         #data.angle=jsondata['angle']
         #data.tunit=jsondata['temp_units']
