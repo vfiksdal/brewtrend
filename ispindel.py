@@ -13,6 +13,7 @@ from dash.dependencies import Input, Output
 from datetime import datetime
 from webapp import app
 from dash.exceptions import PreventUpdate
+import numpy as np
 
 def layout(name):
     # Collect timing information
@@ -29,8 +30,8 @@ def layout(name):
     container.append(dcc.Interval(id='spindel_interval',interval=t_interval*1000,n_intervals=0))
     container.append(dbc.Row([
         dbc.Col(daq.Gauge(id='ispindel_gauge_gravity',
-                color={"gradient":True,"ranges":{"green":[0.9,1.005],"yellow":[1.005,1.020],"red":[1.020,1.100]}},
-                min=0.900,max=1.100,showCurrentValue=True,units='SG',label='Specific Gravity')),
+                color={"gradient":True,"ranges":{"green":[1.0,1.005],"yellow":[1.005,1.020],"red":[1.020,1.100]}},
+                min=1.000,max=1.100,showCurrentValue=True,units='SG',label='Specific Gravity')),
         dbc.Col(daq.Gauge(id='ispindel_gauge_temperature',
                 color={"gradient":True,"ranges":{"green":[0,20],"yellow":[20,25],"red":[25,30]}},
                 min=0,max=30,showCurrentValue=True,units=tunit,label='Temperature')),
@@ -78,12 +79,22 @@ def update_ispindel(n,start,end,cache):
             tt.append(data[i].temperature)
             b.append(data[i].battery)
 
+    # Estimate abv
+    max=np.max(sg)
+    min=np.min(sg)
+    ann='<span style="color:cadetblue">'
+    ann+='MAX:   {:.3f}<br>'.format(max)
+    ann+='MIN:   {:.3f}<br>'.format(min)
+    ann+='ABV:   {:.1f}%'.format((max-min)*131.5)
+    ann+='</span>'
+
     # Update plots
     if app.historian.cfg.fahrenheit:
         tunit='Fahrenheit'
     else:
         tunit='Celsius'
     gfig=go.Figure(data=[go.Scatter(x=t,y=sg,mode='lines+markers',marker=dict(size=2,color='Red'))])
+    gfig.add_annotation(text=ann,xref='paper',yref='paper',x=1.0,y=1.0,showarrow=False)
     gfig.update_layout(title='Specific Gravity',yaxis_title='Oechsle',xaxis_title='Time',template="plotly_dark",title_x=0.5,uirevision=True)
     tfig=go.Figure(data=[go.Scatter(x=t,y=tt,mode='lines+markers',marker=dict(size=2,color='Red'))])
     tfig.update_layout(title='Temperature',yaxis_title=tunit,xaxis_title='Time',template="plotly_dark",title_x=0.5,uirevision=True)
