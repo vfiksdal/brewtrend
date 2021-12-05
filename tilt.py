@@ -85,8 +85,8 @@ def update_tilt(n,start,end,cache):
     else:
         tunit='Celsius'
     gfig=go.Figure(data=[go.Scatter(x=t,y=sg,mode='lines+markers',marker=dict(size=2,color='Red'))])
-    gfig.add_annotation(text=ann,xref='paper',yref='paper',x=1.0,y=1.0,showarrow=False)
-    gfig.update_layout(title='Specific Gravity',yaxis_title='Oechsle',xaxis_title='Time',template="plotly_dark",title_x=0.5,uirevision=True)
+    gfig.add_annotation(text=ann,xref='paper',yref='paper',x=1.0,y=1.0,showarrow=False,bordercolor='Gray',borderwidth=1,borderpad=5)
+    gfig.update_layout(title='Specific Gravity',yaxis_title='Oechsle',xaxis_title='Time',template="plotly_dark",title_x=0.5,uirevision=True,yaxis=dict(tickformat=".3f"))
     tfig=go.Figure(data=[go.Scatter(x=t,y=tt,mode='lines+markers',marker=dict(size=2,color='Red'))])
     tfig.update_layout(title='Temperature',yaxis_title=tunit,xaxis_title='Time',template="plotly_dark",title_x=0.5,uirevision=True)
     _sg=0
