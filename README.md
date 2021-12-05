@@ -32,5 +32,6 @@ Set your device in configuration mode, set service type to HTTP, enter your IP a
 Enter your ip address directly in your browser:
 
 
-![image](https://user-images.githubusercontent.com/51258725/144160612-547cae51-d8c4-42a6-a6f8-83d6cbcfa795.png)
+![image](https://user-images.githubusercontent.com/51258725/144750711-e99d8e77-bdfa-42b7-bc9e-7d745103f212.png)
+
 
