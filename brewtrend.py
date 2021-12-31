@@ -11,6 +11,7 @@ from dash.dependencies import Input, Output, State
 from urllib.parse import unquote
 from dash.exceptions import PreventUpdate
 import dash_bootstrap_components as dbc
+import random,string
 import sys,requests
 
 # Import web app
@@ -23,6 +24,7 @@ from historian import Historian
 # Parse input parameters
 cfg=Configuration()
 cert=None
+token=''
 port=80
 host='0.0.0.0'
 if __name__ == '__main__':
@@ -44,6 +46,12 @@ if __name__ == '__main__':
         elif sys.argv[i]=='--port':
             i+=1
             port=int(sys.argv[i])
+        elif sys.argv[i]=='--gentoken':
+            characters=string.ascii_letters+string.digits
+            token=''.join(random.choice(characters) for i in range(12))
+        elif sys.argv[i]=='--token':
+            i+=1
+            token=sys.argv[i]
         elif sys.argv[i]=='--mfilter':
             i+=1
             cfg.mfilter=int(sys.argv[i])
@@ -76,6 +84,8 @@ if __name__ == '__main__':
             print('\t--config PATH\tLoad options and calibration from file')
             print('\t--host HOST\tInterface to bind to (Default: 0.0.0.0)')
             print('\t--port PORT\tNetwork port for web gui (Default: 80)')
+            print('\t--token TOKEN\tUse a specific token for updates')
+            print('\t--gentoken\tGenerate a token for updates')
             print('\t--selfsigned\tUse self-signed certificate for https')
             print('')
             print('Configuration overrides:')
@@ -242,9 +252,16 @@ def update_devices(n):
 
 
 # Route updates to historian
+while len(token)>0 and token[0]=='/':
+    token=token[1:]
+while len(token)>0 and token[len(token)-1]=='/':
+    token=token[:-1]
+if len(token)==0:
+    token='update'
+print('Listening for updates on '+host+':'+str(port)+'/'+token)
 server=app.server
-@server.route("/update/",methods=['GET','POST'])
-@server.route("/update",methods=['GET','POST'])
+@server.route('/'+token+'/',methods=['GET','POST'])
+@server.route('/'+token,methods=['GET','POST'])
 def update_historian():
     if request.method=='POST':
         # Parse POST data to json-string
