@@ -30,8 +30,8 @@ def layout(name):
     container.append(dcc.Interval(id='spindel_interval',interval=t_interval*1000,n_intervals=0))
     container.append(dbc.Row([
         dbc.Col(daq.Gauge(id='ispindel_gauge_gravity',
-                color={"gradient":True,"ranges":{"green":[1.0,1.005],"yellow":[1.005,1.020],"red":[1.020,1.100]}},
-                min=1.000,max=1.100,showCurrentValue=True,units='SG',label='Specific Gravity')),
+                color={"gradient":True,"ranges":{"green":[0,10],"yellow":[10,40],"red":[40,100]}},
+                min=0,max=100,showCurrentValue=True,units='Oechsle',label='Specific Gravity')),
         dbc.Col(daq.Gauge(id='ispindel_gauge_temperature',
                 color={"gradient":True,"ranges":{"green":[0,20],"yellow":[20,25],"red":[25,30]}},
                 min=0,max=30,showCurrentValue=True,units=tunit,label='Temperature')),
@@ -104,7 +104,7 @@ def update_ispindel(n,start,end,cache):
     _tt=0
     _b=0
     if len(t):
-        _sg=sg[-1]
+        _sg=(sg[-1]-1)*1000
         _tt=tt[-1]
         _b=b[-1]
     
